@@ -84,7 +84,11 @@ Do <em>NOT</em> use absolute paths, such as <pre>"/Users/student/Desktop/image.j
 
 <h2 align="middle">Overview</h2>
 <p>
-    In this homework, I implemented the whole rendering pipeline.
+    In this homework, I implemented the whole rendering pipeline. First, I implemented ray generation, starting with camera rays 
+  that go out into the scene. Then, I implemented primitive intersection so rays can intersect with primitives. Then, I implemented 
+  direct lighting using hemisphere sampling and light sampling, and indirect lighting with Russian Roulette which made it possible for 
+  rays to travel along a path of many points (up to max_ray_depth). Finally, I implemented adaptive sampling which improved the speed 
+  of rendering a scene when we are making make samples per pixel.
 </p>
 <br>
 
