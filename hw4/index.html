@@ -1,7 +1,285 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Homework 4 index.html here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184 Mesh Editor</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2024</h1>
+<h1 align="middle">Project 4: Cloth Simulator</h1>
+<h2 align="middle">Andy Chen, CS 184</h2>
+<h2 align="middle">Website URL: <a href="https://cal-cs184-student.github.io/hw-webpages-sp24-Refangs/hw4/index.html">https://cal-cs184-student.github.io/hw-webpages-sp24-Refangs/hw4/index.html</a></h2>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>In this homework, I implemented some parts of the simulation of a piece of cloth. I implemented the wireframe representing the cloth, collisions between the cloth 
+    and other objects, interaction between cloth and external acceleration (gravity), 
+    collision of the cloth with itself, and various ways of creating textures for the cloth and other objects in the scene in GLSL through shaders.</p>
+
+<h2 align="middle">Part 1</h2>
+<table style="width=100%">
+    <tr>
+        <td align="middle">
+            <img src="images/pinned2.png" width="480px" />
+            <figcaption align="middle">All Constraints</figcaption>
+        </td>
+        <td align="middle">
+            <img src="images/no_shearing.png" width="480px" />
+            <figcaption align="middle">No Shearing</figcaption>
+        </td>
+    </tr>
+    <tr>
+        <td align="middle">
+            <img src="images/only_shearing.png" width="480px" />
+            <figcaption align="middle">Only Shearing</figcaption>
+        </td>
+    </tr>
+</table>
+
+
+<h2 align="middle">Part 2</h2>
+<table style="width=100%">
+    <tr>
+        <td align="middle">
+            <img src="images/cloth_low_ks.png" width="480px" />
+            <figcaption align="middle">Low ks</figcaption>
+        </td>
+        <td align="middle">
+            <img src="images/cloth_high_ks.png" width="480px" />
+            <figcaption align="middle">High ks</figcaption>
+        </td>
+    </tr>
+    <tr>
+        <td align="middle">
+            <img src="images/cloth_high_density.png" width="480px" />
+            <figcaption align="middle">High density</figcaption>
+        </td>
+        <td align="middle">
+            <img src="images/cloth_low_density.png" width="480px" />
+            <figcaption align="middle">Low density</figcaption>
+        </td>
+    </tr>
+    <tr>
+        <td align="middle">
+            <img src="images/cloth_high_damping.png" width="480px" />
+            <figcaption align="middle">High damping (in the middle of falling)</figcaption>
+        </td>
+        <td align="middle">
+            <img src="images/cloth_low_damping.png" width="480px" />
+            <figcaption align="middle">Low damping (after swinging around a bit)</figcaption>
+        </td>
+    </tr>
+</table>
+
+<p>
+    A cloth with low ks from start to finish looks like it has many mini folds/creases, and ends with many folds/creases, while a cloth with high ks
+    has much larger folds/creases, and much fewer folds and creases. This might be because increasing ks (the spring constant) increases the force on
+    points due to springs, which sort of holds everything together more. A cloth with high density also seems to have smaller folds and creases than a 
+    cloth with lower density, which looks much smoother. With low damping, the cloth is allowed to move much more freely, moving very quickly and 
+    looking a bit rough while swinging around. With high damping, the cloth moves much slower, and is very smooth throughout the process.
+</p>
+
+<table style="width=100%">
+    <tr>
+        <td align="middle">
+            <img src="images/pinned4.png" width="480px" />
+            <figcaption align="middle">pinned4 at rest</figcaption>
+        </td>
+    </tr>
+</table>
+
+<h2 align="middle">Part 3</h2>
+<table style="width=100%">
+    <tr>
+        <td align="middle">
+            <img src="images/5000ks.png" width="480px" />
+            <figcaption align="middle">5000 ks</figcaption>
+        </td>
+        <td align="middle">
+            <img src="images/50000ks.png" width="480px" />
+            <figcaption align="middle">50000 ks</figcaption>
+        </td>
+    </tr>
+    <tr>
+        <td align="middle">
+            <img src="images/500ks.png" width="480px" />
+            <figcaption align="middle">500 ks</figcaption>
+        </td>
+    </tr>
+</table>
+
+<p>The higher the ks, the "less droopy" the cloth is, and the lower the ks, the "more droopy" the cloth is. This is likely due to a higher spring force 
+    holding the falling parts of the cloth up more, while a lower spring force would let the falling parts of the cloth fall farther.</p>
+
+<table style="width=100%">
+    <tr>
+        <td align="middle">
+            <img src="images/resting.png" width="480px" />
+            <figcaption align="middle">Campanile lying peacefully</figcaption>
+        </td>
+    </tr>
+</table>
+
+<h2 align="middle">Part 4</h2>
+<table style="width=100%">
+    <tr>
+        <td align="middle">
+            <img src="images/early.png" width="480px" />
+            <figcaption align="middle">early</figcaption>
+        </td>
+        <td align="middle">
+            <img src="images/mid.png" width="480px" />
+            <figcaption align="middle">middle</figcaption>
+        </td>
+    </tr>
+    <tr>
+        <td align="middle">
+            <img src="images/rest.png" width="480px" />
+            <figcaption align="middle">end</figcaption>
+        </td>
+    </tr>
+    <tr>
+        <td align="middle">
+            <img src="images/collision_lowks.png" width="480px" />
+            <figcaption align="middle">middle, low ks</figcaption>
+        </td>
+        <td align="middle">
+            <img src="images/collision_highks.png" width="480px" />
+            <figcaption align="middle">middle, high ks</figcaption>
+        </td>
+    </tr>
+    <tr>
+        <td align="middle">
+            <img src="images/collision_lowd.png" width="480px" />
+            <figcaption align="middle">middle low density</figcaption>
+        </td>
+        <td align="middle">
+            <img src="images/collision_highd.png" width="480px" />
+            <figcaption align="middle">middle high density</figcaption>
+        </td>
+    </tr>
+</table>
+
+<p>
+    A cloth with lower ks "bends" much less, mostly falling with very small folds, while a cloth with higher ks 
+    "bends" much more. A cloth with low density bended much more, while a cloth with high density scrunches up, until 
+    it settles in a scrunched pile at the very bottom.
+</p>
+
+<h2 align="middle">Part 5</h2>
+<p>A shader program consists of a vertex shader and a fragment shader. Vertex shaders calculate new values for vertices (e.g. position, 
+    normal, etc.), which will be 
+    fed into fragment shaders, which (for the purposes of this assignment) essentially calculate the color for each pixel. Vertex shaders 
+    can perform displacement mapping, where the actual position of vertices of polygons is altered to produce a shading effect. This can 
+    be combined with a fragment shader creating lighting effects (these can be calculated based on position/intensity of light sources) or 
+    other effects like texture mapping.</p>
+<p>
+
+</p>
+<table style="width=100%">
+    <tr>
+        <td align="middle">
+            <img src="images/only_ambient.png" width="480px" />
+            <figcaption align="middle">Only ambient</figcaption>
+        </td>
+        <td align="middle">
+            <img src="images/only_diffuse.png" width="480px" />
+            <figcaption align="middle">Only diffuse</figcaption>
+        </td>
+    </tr>
+    <tr>
+        <td align="middle">
+            <img src="images/only_specular.png" width="480px" />
+            <figcaption align="middle">Only specular</figcaption>
+        </td>
+        <td align="middle">
+            <img src="images/phong.png" width="480px" />
+            <figcaption align="middle">Entire Blinn-Phong model</figcaption>
+        </td>
+    </tr>
+    <tr>
+        <td align="middle">
+            <img src="images/custom.png" width="480px" />
+            <figcaption align="middle">Custom Texture (modified texture_1)</figcaption>
+        </td>
+        <td align="middle">
+            <img src="images/phong.png" width="480px" />
+            <figcaption align="middle">Entire Blinn-Phong model</figcaption>
+        </td>
+    </tr>
+</table>
+
+<p>
+    The Blinn-Phong shading model as used in this assignment contains three components: ambient, specular, and diffuse.
+    The ambient part of the model captures the ambient lighting of the environment (light, dark, etc.). The specular 
+    part of the model captures the "shiny" part of how light reflects off an object. The diffuse part captures the diffuse 
+    portion of the lighting (where light goes equally in all directions when intersecting with a point). The result is a 
+    more realistic depiction of an object that reflects light to some degree, such as a more diffuse metal object.
+</p>
+
+<table style="width=100%">
+    <tr>
+        <td align="middle">
+            <img src="images/bump16.png" width="480px" />
+            <figcaption align="middle">Bump Map (16)</figcaption>
+        </td>
+        <td align="middle">
+            <img src="images/bump128.png" width="480px" />
+            <figcaption align="middle">Bump Map (128)</figcaption>
+        </td>
+    </tr>
+    <tr>
+        <td align="middle">
+            <img src="images/displacement16.png" width="480px" />
+            <figcaption align="middle">Displacement Map (16)</figcaption>
+        </td>
+        <td align="middle">
+            <img src="images/displacement128.png" width="480px" />
+            <figcaption align="middle">Displacement Map (128)</figcaption>
+        </td>
+    </tr>
+</table>
+<p>
+    Bump mapping creates a texture by altering the lighting captured at each pixel. Bump mapping preserves 
+    the original geometry of objects in the scene, so it can sometimes look a bit out of place or weird when 
+    the texture that we are trying to create is more "rough". Displacement mapping creates a texture by altering 
+    the geometry of objects in the scene (in our case, changing the position of the vertices of triangles). This 
+    can be seen in the images, where the bump map images look smooth (cloth over sphere) but the displacement mapped 
+    images look rough (the cloth and the sphere are both quite bumpy in the 128 resolution one). For displacement mapping, 
+    the lower resolution image looks to be much less affected by displacement mapping, most likely due to less vertices being 
+    displaced and having less of a countour, while bump mapping looked about the same across the two resolutions.
+</p>
+</div>
+
+<table style="width=100%">
+    <tr>
+        <td align="middle">
+            <img src="images/mirror.png" width="480px" />
+            <figcaption align="middle">Mirror on Cloth on Sphere</figcaption>
+        </td>
+    </tr>
+</table>
+
+</body>
 </html>
